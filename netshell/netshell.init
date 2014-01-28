@@ -1,7 +1,6 @@
 #! /bin/sh
 
 # init file for netshell
-# Copyright (C) SINA <zhiyong1@staff.sina.com.cn>
 
 # chkconfig: 2345 99 20
 # description: netshell service
