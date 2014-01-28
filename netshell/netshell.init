@@ -1,0 +1,126 @@
+#! /bin/sh
+
+# init file for netshell
+# Copyright (C) SINA <zhiyong1@staff.sina.com.cn>
+
+# chkconfig: 2345 99 20
+# description: netshell service
+# processname: netshell 
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+if [ "${NETSHELL_SYSCONFIG}x" != "x" ]; then
+    . "${NETSHELL_SYSCONFIG}"
+fi
+
+pidfile=${PID_FILE-/var/run/netshell.pid}
+netshell=${NETSHELL-/usr/bin/netshell}
+
+inter=""
+if [ "${INTER}x" != "x" ]; then
+    inter="-i ${INTER}" 
+fi
+
+port="-p 8000"
+if [ "${LISTEN_PORT}x" != "x" ]; then
+    port="-p ${LISTEN_PORT}"
+fi
+
+mlimit="-m 64"
+if [ "${MEM_LIMIT}x" != "x" ]; then
+    mlimit="-m ${MEM_LIMIT}"
+fi
+
+allowlru=""
+if [ "${ALLOW_LRU}x" != "1x" ]; then
+    allowlru="-M"
+fi
+
+minblock="-n 64"
+if [ "${MIN_BLOCK}x" != "x" ]; then
+    minblock="-n ${MIN_BLOCK}"
+fi
+
+factor="-f 2"
+if [ "${FACTOR}x" != "x" ]; then
+    factor="-f ${FACTOR}"
+fi
+
+pid="-P ${pidfile}"
+
+maxblock="-I 1048576"
+if [ "${MAX_BLOCK}x" != "x" ]; then
+    maxblock="-I ${MAX_BLOCK}"
+fi
+
+asdaemon="-d"
+
+nbucket="-b 65536"
+if [ "${BUCKET_NUMBER}x" != "x" ]; then
+    nbucket="-b ${BUCKET_NUMBER}"
+fi
+
+mmapfile="-t /dev/shm/netshell.mmap.${port}"
+if [ "${MMAP_FILE}x" != "x" ]; then
+    mmapfile="-t ${MMAP_FILE}"
+fi
+
+defcounter=""
+if [ "${DEFAULT_COUNTER}x" == "1x" ]; then
+    defcounter="-c"
+fi
+
+useflock=""
+if [ "${USE_FLOCK}x" == "1x" ]; then
+    useflock="-l"
+fi
+
+newmmap=""
+if [ "${NEW_MMAP}x" == "1x" ]; then
+    newmmap="-a"
+fi
+
+prog=netshell
+RETVAL=0
+
+start() {
+    echo -n $"Starting $prog: "
+    cmd="${netshell} ${inter} ${port} ${mlimit} ${allowlru}   \
+         ${minblock} ${factor} ${pid} ${maxblock} ${asdaemon} \
+         ${nbucket} ${mmapfile} ${defcounter} ${useflock} ${newmmap}"
+         
+    daemon --pidfile=${pidfile} $cmd
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc -p ${pidfile} -d 30 $prog
+	RETVAL=$?
+	echo
+}
+
+case "$1" in
+    start)
+      start
+	  ;;
+    stop)
+      stop
+      ;;
+    status)
+      status -p ${pidfile} $prog
+      RETVAL=$?
+      ;;
+    restart)
+	  stop
+	  start
+	  ;;
+    *)
+	  echo $"Usage: $0 {start|stop|status|restart}"
+	  RETVAL=1
+esac
+
+exit $RETVAL
