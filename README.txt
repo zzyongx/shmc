@@ -39,7 +39,7 @@ In fact netshell is a program use shmc,
 shmc_attr_t attr = SHMC_ATTR_INITIALIZER;
 
 shmc_t *shmc;
-shmc_init("/dev/shmc/x.db", &attr, &shmc);_
+shmc_init("/dev/shmc/x.db", &attr, &shmc);
 
 shmc_set(shmc, "key", 3, "value", 5, 0);
 
